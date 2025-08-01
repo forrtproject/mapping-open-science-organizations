@@ -30,7 +30,7 @@ We welcome contributions from the Open Science community. Please submit issues, 
 
 ### Partnerships
 
-This project is developed in collaboration with Metadocencia, Access to Perspectives, e-Life, ASAPbio, COS, and other relevant initiatives.
+
 
 ## License
 
