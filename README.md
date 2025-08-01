@@ -28,9 +28,9 @@ shiny::runApp("mapping-open-science-organizations")
 
 We welcome contributions from the Open Science community. Please submit issues, feature requests, or pull requests to improve the app.
 
-### Partnerships
+### Integration
 
-
+integration of world coordinated data from multiple sources is planned.
 
 ## License
 
