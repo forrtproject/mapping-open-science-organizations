@@ -4,48 +4,79 @@ library(dplyr)
 
 # Sample data frame simulating integrated datasets with metadata
 # In practice, this data would be loaded from external sources and harmonized
-data <- data.frame(
-  Organization = paste("Open Science Org", seq(1, 196)),
-  Type = sample(c("Training", "Research", "Policies", "Educational Materials"), 196, replace = TRUE),
-  Discipline = sample(c("Biology", "Physics", "Social Sciences", "Chemistry", "Mathematics", "Computer Science", "Environmental Science", "Medicine", "Engineering", "Psychology"), 196, replace = TRUE),
-  DateCreated = sample(seq(as.Date('2010-01-01'), as.Date('2023-01-01'), by="day"), 196, replace = TRUE),
-  Region = sample(c("Europe", "North America", "South America", "Asia", "Africa", "Oceania"), 196, replace = TRUE),
-  Country = c(
-    "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina",
-    "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh",
-    "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina",
-    "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia",
-    "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros",
-    "Congo", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica",
-    "Dominican Republic", "DR Congo", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea",
-    "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany",
-    "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras",
-    "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Ivory Coast",
-    "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan", "Laos",
-    "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg",
-    "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania",
-    "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco",
-    "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua",
-    "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway", "Oman", "Pakistan", "Palau",
-    "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal",
-    "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia",
-    "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia",
-    "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia",
-    "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka",
-    "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania",
-    "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey",
-    "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "USA",
-    "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia",
-    "Zimbabwe"
-  ),
-  Language = sample(c("English", "French", "Spanish", "Mandarin", "Hindi", "Arabic"), 196, replace = TRUE),
-  Latitude = runif(196, -90, 90),
-  Longitude = runif(196, -180, 180),
-  Lead = paste("Lead", seq(1, 196)),
-  Mission = paste("Mission", seq(1, 196)),
-  Funding = sample(c("Grant X", "Institutional", "Crowdfunding", "Grant Y", "Grant Z"), 196, replace = TRUE),
-  stringsAsFactors = FALSE
+
+# Define regions and their corresponding countries
+regions_countries <- list(
+  "Europe" = c("Albania", "Andorra", "Austria", "Belarus", "Belgium", "Bosnia and Herzegovina",
+               "Bulgaria", "Croatia", "Cyprus", "Czech Republic", "Denmark", "Estonia",
+               "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland",
+               "Italy", "Latvia", "Liechtenstein", "Lithuania", "Luxembourg", "Malta",
+               "Moldova", "Monaco", "Montenegro", "Netherlands", "North Macedonia",
+               "Norway", "Poland", "Portugal", "Romania", "San Marino", "Serbia",
+               "Slovakia", "Slovenia", "Spain", "Sweden", "Switzerland", "Ukraine", "United Kingdom"),
+  "North America" = c("Antigua and Barbuda", "Bahamas", "Barbados", "Belize", "Canada",
+                      "Costa Rica", "Cuba", "Dominica", "Dominican Republic", "El Salvador",
+                      "Grenada", "Guatemala", "Haiti", "Honduras", "Jamaica", "Mexico",
+                      "Nicaragua", "Panama", "Saint Kitts and Nevis", "Saint Lucia",
+                      "Saint Vincent and the Grenadines", "Trinidad and Tobago", "USA"),
+  "South America" = c("Argentina", "Bolivia", "Brazil", "Chile", "Colombia", "Ecuador",
+                      "Guyana", "Paraguay", "Peru", "Suriname", "Uruguay", "Venezuela"),
+  "Asia" = c("Afghanistan", "Armenia", "Azerbaijan", "Bahrain", "Bangladesh", "Bhutan",
+             "Brunei", "Cambodia", "China", "Cyprus", "Georgia", "India", "Indonesia",
+             "Iran", "Iraq", "Israel", "Japan", "Jordan", "Kazakhstan", "Kuwait",
+             "Kyrgyzstan", "Laos", "Lebanon", "Malaysia", "Maldives", "Mongolia",
+             "Myanmar", "Nepal", "North Korea", "Oman", "Pakistan", "Palestine",
+             "Philippines", "Qatar", "Russia", "Saudi Arabia", "Singapore", "South Korea",
+             "Sri Lanka", "Syria", "Taiwan", "Tajikistan", "Thailand", "Timor-Leste",
+             "Turkey", "Turkmenistan", "United Arab Emirates", "Uzbekistan", "Vietnam", "Yemen"),
+  "Africa" = c("Algeria", "Angola", "Benin", "Botswana", "Burkina Faso", "Burundi",
+               "Cabo Verde", "Cameroon", "Central African Republic", "Chad", "Comoros",
+               "Congo", "Djibouti", "DR Congo", "Egypt", "Equatorial Guinea", "Eritrea",
+               "Eswatini", "Ethiopia", "Gabon", "Gambia", "Ghana", "Guinea", "Guinea-Bissau",
+               "Ivory Coast", "Kenya", "Lesotho", "Liberia", "Libya", "Madagascar", "Malawi",
+               "Mali", "Mauritania", "Mauritius", "Morocco", "Mozambique", "Namibia", "Niger",
+               "Nigeria", "Rwanda", "Sao Tome and Principe", "Senegal", "Seychelles",
+               "Sierra Leone", "Somalia", "South Africa", "South Sudan", "Sudan", "Tanzania",
+               "Togo", "Tunisia", "Uganda", "Zambia", "Zimbabwe"),
+  "Oceania" = c("Australia", "Fiji", "Kiribati", "Marshall Islands", "Micronesia",
+                "Nauru", "New Zealand", "Palau", "Papua New Guinea", "Samoa",
+                "Solomon Islands", "Tonga", "Tuvalu", "Vanuatu")
 )
+
+# Generate data with proper region-country associations
+set.seed(123)  # For reproducibility
+n_orgs <- 196
+data_list <- list()
+
+for (i in 1:n_orgs) {
+  # Randomly select a region
+  region <- sample(names(regions_countries), 1)
+  # Select a country from that region
+  country <- sample(regions_countries[[region]], 1)
+  
+  data_list[[i]] <- list(
+    Organization = paste("Open Science Org", i),
+    Type = sample(c("Training", "Research", "Policies", "Educational Materials"), 1),
+    Discipline = sample(c("Biology", "Physics", "Social Sciences", "Chemistry", "Mathematics", 
+                          "Computer Science", "Environmental Science", "Medicine", "Engineering", 
+                          "Psychology"), 1),
+    DateCreated = sample(seq(as.Date('2010-01-01'), as.Date('2023-01-01'), by="day"), 1),
+    Region = region,
+    Country = country,
+    Language = sample(c("English", "French", "Spanish", "Mandarin", "Hindi", "Arabic"), 1),
+    Latitude = runif(1, -90, 90),
+    Longitude = runif(1, -180, 180),
+    Lead = paste("Lead", i),
+    Mission = paste("Mission", i),
+    Funding = sample(c("Grant X", "Institutional", "Crowdfunding", "Grant Y", "Grant Z"), 1)
+  )
+}
+
+# Convert to data frame
+data <- do.call(rbind, lapply(data_list, as.data.frame))
+data$DateCreated <- as.Date(data$DateCreated)
+data$Latitude <- as.numeric(as.character(data$Latitude))
+data$Longitude <- as.numeric(as.character(data$Longitude))
 
 # Define UI for application
 ui <- fluidPage(
