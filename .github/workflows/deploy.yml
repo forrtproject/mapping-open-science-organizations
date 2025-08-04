@@ -28,7 +28,7 @@ jobs:
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
         run: |
           R -e "
-            install.packages('rsconnect');
+            install.packages(c('rsconnect', 'shiny', 'dplyr', 'leaflet'));
             rsconnect::setAccountInfo(name='forrt', token='${{secrets.SHINYAPPS_TOKEN}}', secret='${{secrets.SHINYAPPS_SECRET}}');
             rsconnect::deployApp(appName = 'os-mapping',  forceUpdate = TRUE);
           "

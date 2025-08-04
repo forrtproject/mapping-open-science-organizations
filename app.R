@@ -2,9 +2,6 @@ library(shiny)
 library(leaflet)
 library(dplyr)
 
-# Sample data frame simulating integrated datasets with metadata
-# In practice, this data would be loaded from external sources and harmonized
-
 # Define regions and their corresponding countries
 regions_countries <- list(
   "Europe" = c("Albania", "Andorra", "Austria", "Belarus", "Belgium", "Bosnia and Herzegovina",

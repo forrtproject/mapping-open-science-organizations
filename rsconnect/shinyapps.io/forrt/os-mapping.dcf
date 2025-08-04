@@ -5,6 +5,6 @@ account: forrt
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 15160123
-bundleId: 10726492
+bundleId: 10726706
 url: https://forrt.shinyapps.io/os-mapping/
 version: 1
