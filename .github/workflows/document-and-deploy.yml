@@ -23,30 +23,6 @@ jobs:
           r-version: "oldrel" # As shinyapps.io needs some time to catch up after releases
           use-public-rspm: true
 
-      # - name: Set up R Dependencies
-      #   uses: r-lib/actions/setup-r-dependencies@v2
-      #   with:
-      #     extra-packages: devtools, roxygen2, remotes, rsconnect
-
-      # - name: Create documentation
-      #   run: |
-      #     R -e "
-      #       file.remove('NAMESPACE');
-      #       descr <- readLines('DESCRIPTION');
-      #       descr <- stringr::str_replace(descr, '^Date.*$', paste('Date:', Sys.Date()));
-      #       writeLines(descr, 'DESCRIPTION');
-      #       roxygen2::roxygenise();
-      #       try(devtools::build_manual())
-          "
-
-      # - name: commit
-      #   run: |
-      #     git config --local user.email "actions@github.com"
-      #     git config --local user.name "GitHub Actions"
-      #     git add -f man/\* NAMESPACE
-      #     git commit -m 'Documentation' || echo "No changes to commit"
-      #     git push origin || echo "No changes to commit"
-
       - name: Deploy to Shiny
         env:
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -56,29 +32,3 @@ jobs:
             rsconnect::setAccountInfo(name='forrt', token=${{secrets.SHINYAPPS_TOKEN}}, secret=${{secrets.SHINYAPPS_SECRET}});
             rsconnect::deployApp(appName = 'os-mapping',  forceUpdate = TRUE);
           "
-
-      # - name: Deploy release version conditionally
-      #   if: github.event_name == 'release' && github.event.release.tag_name != '*test*'
-      #   run: |
-      #     R -e "
-      #         rsconnect::deployApp(appName = 'fred_explorer_release', appDir = './inst/fred_explorer', forceUpdate = TRUE);
-      #         rsconnect::deployApp(appName = 'fred_annotator_release', appDir = './inst/fred_annotator', forceUpdate = TRUE);
-      #     "
-
-      # - name: Create pkgdown
-      #   env:
-      #     GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      #   run: |
-      #     R -e "
-      #       if (!require(FReD)) remotes::install_local(force = TRUE);
-      #       options(pkgdown.internet = TRUE);
-      #       pkgdown::build_site_github_pages(new_process = FALSE)
-      #     "
-
-      # - name: Deploy to GitHub pages 🚀
-      #   if: ${{ github.ref_name }} == 'main'
-      #   uses: JamesIves/github-pages-deploy-action@v4
-      #   with:
-      #     clean: true
-      #     branch: gh-pages
-      #     folder: docs
