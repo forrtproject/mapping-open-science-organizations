@@ -29,6 +29,6 @@ jobs:
         run: |
           R -e "
             install.packages('rsconnect');
-            rsconnect::setAccountInfo(name='forrt', token=${{secrets.SHINYAPPS_TOKEN}}, secret=${{secrets.SHINYAPPS_SECRET}});
+            rsconnect::setAccountInfo(name='forrt', token='${{secrets.SHINYAPPS_TOKEN}}', secret='${{secrets.SHINYAPPS_SECRET}}');
             rsconnect::deployApp(appName = 'os-mapping',  forceUpdate = TRUE);
           "
