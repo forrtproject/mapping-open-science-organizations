@@ -1,4 +1,4 @@
-name: document-and-deploy
+name: deploy
 
 on:
   push:
@@ -28,7 +28,7 @@ jobs:
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
         run: |
           R -e "
-            remotes::install_github('${{ github.repository }}', ref = '${{ github.ref_name }}', force = TRUE);
+            install.packages('rsconnect');
             rsconnect::setAccountInfo(name='forrt', token=${{secrets.SHINYAPPS_TOKEN}}, secret=${{secrets.SHINYAPPS_SECRET}});
             rsconnect::deployApp(appName = 'os-mapping',  forceUpdate = TRUE);
           "
