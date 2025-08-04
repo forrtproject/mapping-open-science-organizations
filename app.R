@@ -117,7 +117,7 @@ ui <- fluidPage(
                  p("This ShinyApp is developed for the FORRT Open Science Community Mapping Initiative."),
                  p("Data integration from multiple sources is ongoing."),
                  p("Enhancing open science practices and FAIR Principles Reproducible Research."),
-                 p(md("This builds on Skubera Magda, Korbmacher Max, Evans Thomas Rhys, Azevedo Flavio and Pennington Charlotte R. 2025 International initiatives to enhance awareness and uptake of open research in psychology: a systematic mapping review. *R. Soc. Open Sci.* 12241726. https://doi.org/10.1098/rsos.241726"))
+                 p(markdown("This builds on Skubera Magda, Korbmacher Max, Evans Thomas Rhys, Azevedo Flavio and Pennington Charlotte R. 2025 International initiatives to enhance awareness and uptake of open research in psychology: a systematic mapping review. *R. Soc. Open Sci.* 12241726. https://doi.org/10.1098/rsos.241726"))
         )
       )
     )
