@@ -14,6 +14,9 @@ This project is an interactive Shiny application developed for the FORRT Open Sc
   - Country Filter: Select specific countries (dynamically updates based on region selection)
 - **Language Filter**: Filter initiatives by language
 
+### Data Integration
+- Combine and harmonize datasets from multiple sources including Skubera et al.’s Literature Search Database, Metadocencia’s Mapped Communities, Access2Perspectives Kumo Network, COSGN Database, FORRT’s Curated Resources, ICOR’s Project Library, IOI’s Infra Finder, Open Science Learning Gate, and Embassy of Good Science.
+
 ### Visualization Tools
 - **Interactive World Map**: Visualize organization locations with marker clustering
 - **Popup Information**: Click on map markers to view detailed organization information
