@@ -5,7 +5,6 @@ library(plotly)
 library(openxlsx)
 library(shinythemes)
 
-# Define regions and their corresponding countries
 regions_countries <- list(
   "Europe" = c("Albania", "Andorra", "Austria", "Belarus", "Belgium", "Bosnia and Herzegovina",
                "Bulgaria", "Croatia", "Cyprus", "Czech Republic", "Denmark", "Estonia",
@@ -43,11 +42,13 @@ regions_countries <- list(
                 "Solomon Islands", "Tonga", "Tuvalu", "Vanuatu")
 )
 
-# Remove static data generation and replace with reactive data fetching
-
-# Function to simulate fetching data (can be replaced with real API calls)
+#' Placeholder organization records until a real data source (e.g. an API) is connected.
+#'
+#' @return One row per organization. Coordinates are uniform random, so points can fall
+#'   in oceans and do not match the sampled Country.
 fetch_data <- function() {
-  set.seed(123)  # Fixed seed for consistency
+  # Keeps the placeholder dataset identical across restarts and deployments
+  set.seed(123)
   n_orgs <- 196
   data_list <- vector("list", n_orgs)
 
@@ -81,10 +82,23 @@ fetch_data <- function() {
   df
 }
 
-# Generate data once for UI
+# Built at startup rather than per session: the UI filter choices below are derived from it
 data <- fetch_data()
 
-# Define UI for application
+#' Esri Light Gray basemap plus its place-name layer; neither needs an API key.
+#'
+#' Not CARTO Positron: CARTO now watermarks keyless tiles with "API KEY REQUIRED", and a key
+#' would be exposed in public HTML. The place-name layer is empty below zoom 3.
+#' @param map A leaflet map widget.
+add_basemap <- function(map) {
+  map %>%
+    addProviderTiles(providers$Esri.WorldGrayCanvas) %>%
+    addTiles(
+      urlTemplate = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}",
+      options = tileOptions(maxZoom = 16)
+    )
+}
+
 ui <- fluidPage(
   theme = shinytheme("flatly"),
   tags$style(type = "text/css", "
@@ -173,7 +187,7 @@ ui <- fluidPage(
   )
 )
 
-# Define color palette for initiative types
+# Names must match the Type values in fetch_data(); an unmatched type gets an NA marker colour
 type_colors <- c(
   "Training" = "#e41a1c",
   "Research" = "#377eb8",
@@ -181,71 +195,58 @@ type_colors <- c(
   "Educational Materials" = "#984ea3"
 )
 
-# Define server logic
 server <- function(input, output, session) {
-  # Dynamic UI for country filter based on selected region
   output$countryUI <- renderUI({
     req(input$regionFilter)
-    if (input$regionFilter == "All") {
-      all_countries <- unique(unlist(regions_countries))
-      selectInput("countryFilter", "Country:",
-                  choices = c("All", all_countries), selected = "All")
+    countries <- if (input$regionFilter == "All") {
+      unique(unlist(regions_countries))
     } else {
-      countries <- regions_countries[[input$regionFilter]]
-      selectInput("countryFilter", "Country:",
-                  choices = c("All", countries), selected = "All")
+      regions_countries[[input$regionFilter]]
     }
+    selectInput("countryFilter", "Country:",
+                choices = c("All", countries), selected = "All")
   })
-  
-  # Reactive expression for filtered data
+
   filteredData <- reactive({
     df <- data
 
-    # Filter by search term
     if (nchar(input$search) > 0) {
       df <- df[grepl(input$search, df$Organization, ignore.case = TRUE), ]
     }
 
-    # Filter by type
     if (input$typeFilter != "All") {
       df <- df[df$Type == input$typeFilter, ]
     }
 
-    # Filter by discipline
     if (input$disciplineFilter != "All") {
       df <- df[df$Discipline == input$disciplineFilter, ]
     }
 
-    # Filter by date range
     df <- df[df$DateCreated >= input$dateFilter[1] & df$DateCreated <= input$dateFilter[2], ]
 
-    # Filter by region
     if (input$regionFilter != "All") {
       df <- df[df$Region == input$regionFilter, ]
     }
 
-    # Filter by country
+    # countryFilter comes from renderUI, so it is NULL until that UI has rendered once
     if (!is.null(input$countryFilter) && input$countryFilter != "All") {
       df <- df[df$Country == input$countryFilter, ]
     }
 
-    # Filter by language
     if (input$languageFilter != "All") {
       df <- df[df$Language == input$languageFilter, ]
     }
 
-    # Ensure Latitude and Longitude are numeric and valid
+    # as.character() first: as.numeric() on a factor returns its level codes, not the values
     df <- df[!is.na(as.numeric(as.character(df$Latitude))) & !is.na(as.numeric(as.character(df$Longitude))), ]
     df$Latitude <- as.numeric(as.character(df$Latitude))
     df$Longitude <- as.numeric(as.character(df$Longitude))
 
-    # Add color based on Type
     df$Color <- type_colors[df$Type]
 
     df
   })
-  
-  # Render search results table
+
   output$results <- renderTable({
     df <- filteredData()
     if (nrow(df) == 0) {
@@ -255,13 +256,11 @@ server <- function(input, output, session) {
       select(Organization, Type, Discipline, DateCreated, Region, Country, Language, Lead, Mission, Funding)
   })
 
-  # Render total results text
   output$totalResults <- renderText({
     df <- filteredData()
     paste("Total results:", nrow(df))
   })
   
-  # Render leaflet map
   output$map <- renderLeaflet({
     df <- filteredData()
     print(paste("Filtered data rows:", nrow(df)))  # Debug print
@@ -270,11 +269,11 @@ server <- function(input, output, session) {
     print(paste("Cleaned data rows:", nrow(df)))  # Debug print
     if (nrow(df) == 0) {
       leaflet() %>%
-        addProviderTiles(providers$CartoDB.Positron) %>%
+        add_basemap() %>%
         addControl("No data to display", position = "topright")
     } else {
       leaflet() %>%
-        addProviderTiles(providers$CartoDB.Positron) %>%
+        add_basemap() %>%
         addCircleMarkers(
           data = df,
           lng = ~Longitude,
@@ -301,7 +300,6 @@ server <- function(input, output, session) {
     }
   })
 
-  # Observe marker click to zoom to the location
   observeEvent(input$map_marker_click, {
     click <- input$map_marker_click
     if (!is.null(click)) {
@@ -310,7 +308,6 @@ server <- function(input, output, session) {
     }
   })
 
-  # Download handlers
   output$downloadCSV <- downloadHandler(
     filename = function() {
       paste("search_results_", Sys.Date(), ".csv", sep = "")
@@ -329,7 +326,6 @@ server <- function(input, output, session) {
     }
   )
   
-  # Render dashboard analytics plots
   output$typePlot <- renderPlotly({
     df <- filteredData()
     type_counts <- table(df$Type)
@@ -368,7 +364,6 @@ server <- function(input, output, session) {
              xaxis = list(title = "Date"), yaxis = list(title = "Count"))
   })
   
-  # Placeholder for feedback modal
   observeEvent(input$feedbackBtn, {
     showModal(modalDialog(
       title = "Submit Feedback",
@@ -380,15 +375,13 @@ server <- function(input, output, session) {
     ))
   })
   
-  # Handle feedback submission
   observeEvent(input$submitFeedback, {
     feedback <- input$feedbackText
-    # For now, just print feedback to console (to be replaced with storage or email)
+    # Placeholder: feedback reaches only the server log until storage or email delivery exists
     cat("User Feedback:", feedback, "\n")
     removeModal()
     showNotification("Thank you for your feedback!", type = "message")
   })
 }
 
-# Run the application
 shinyApp(ui = ui, server = server, options = list(port = 8103))
